@@ -1,27 +1,28 @@
-const WatchHistory = require('../models/watchHistoryModal');
+const WatchHistory = require("../models/watchHistoryModal");
 
 const addWatchHistory = async (req, res) => {
   try {
-    const { userID, exerciseName, level, days } = req.body;
+    const { userID, type, level, days } = req.body;
     console.log("body", req.body);
 
     const newHistoryEntry = new WatchHistory({
       userID,
-      exerciseName,
+      type,
       level,
       days,
     });
 
     const newHistory = await newHistoryEntry.save();
 
-    res.status(201).json({ message: 'Watch history entry added successfully', payload: newHistory });
-
+    res.status(201).json({
+      message: "Watch history entry added successfully",
+      payload: newHistory,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 // Controller to get all watch history entries
 const getWatchHistory = async (req, res) => {
@@ -30,10 +31,9 @@ const getWatchHistory = async (req, res) => {
     res.status(200).json(watchHistoryEntries);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 // Controller to get watch history entries by userId
 const getWatchHistoryByUserId = async (req, res) => {
@@ -45,10 +45,33 @@ const getWatchHistoryByUserId = async (req, res) => {
     res.status(200).json(watchHistoryEntries);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
+// Controller to get watch history entries by userId, type, and level
+const getWatchHistoryByFilter = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { type, level } = req.query;
+
+    const filter = { userID: userId };
+    if (type) {
+      filter.type = type;
+    }
+    if (level) {
+      filter.level = level;
+    }
+
+    // Find watch history entries based on the filter
+    const watchHistoryEntries = await WatchHistory.find(filter);
+
+    res.status(200).json(watchHistoryEntries);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 const deleteWatchHistory = async (req, res) => {
   try {
@@ -56,10 +79,12 @@ const deleteWatchHistory = async (req, res) => {
 
     await WatchHistory.findByIdAndDelete(id);
 
-    res.status(200).json({ message: 'Watch history entry deleted successfully' });
+    res
+      .status(200)
+      .json({ message: "Watch history entry deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -82,20 +107,20 @@ const updateWatchHistory = async (req, res) => {
     );
 
     res.status(200).json({
-      message: 'Watch history entry updated successfully',
+      message: "Watch history entry updated successfully",
       updatedEntry: updatedHistoryEntry,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 module.exports = {
   addWatchHistory,
   getWatchHistory,
   getWatchHistoryByUserId,
+  getWatchHistoryByFilter,
   deleteWatchHistory,
-  updateWatchHistory
+  updateWatchHistory,
 };
